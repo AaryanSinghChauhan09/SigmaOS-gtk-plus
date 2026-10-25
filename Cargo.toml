@@ -1,0 +1,27 @@
+[package]
+name = "sigmaos-gtk-plus"
+version = "0.1.0"
+edition = "2021"
+description = "SigmaOS GTK+ application suite - Bluetooth manager and media player"
+authors = ["SigmaOS Contributors"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/AaryanSinghChauhan09/SigmaOS-gtk-plus"
+keywords = ["gtk", "bluetooth", "media", "desktop", "sigmaos"]
+categories = ["gui", "multimedia"]
+
+[[bin]]
+name = "sigma-bluetooth"
+path = "src/bluetooth/main.rs"
+
+[[bin]]
+name = "sigma-player"
+path = "src/player/main.rs"
+
+[lib]
+name = "sigmaos_gtk_plus"
+path = "src/lib.rs"
+
+[dependencies]
+log = "0.4"
+
+[dev-dependencies]
