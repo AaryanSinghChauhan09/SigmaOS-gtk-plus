@@ -134,3 +134,80 @@ impl BluetoothManager {
 impl Default for BluetoothManager {
     fn default() -> Self { Self::new() }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_device_creation_valid_and_invalid_mac() {
+        // Arrange & Act: valid MAC
+        let dev = BluetoothDevice::new("00:1A:7D:DA:71:13", "Headphones", 0x200404);
+        // Assert
+        assert!(dev.is_ok());
+        let dev = dev.unwrap();
+        assert_eq!(dev.address(), "00:1A:7D:DA:71:13");
+        assert_eq!(dev.name(), "Headphones");
+        assert_eq!(dev.state(), &DeviceState::Discovered);
+
+        // Arrange & Act: invalid MAC
+        let bad_dev = BluetoothDevice::new("invalid_mac", "Phone", 0);
+        // Assert
+        assert!(bad_dev.is_err());
+    }
+
+    #[test]
+    fn test_device_state_transitions() {
+        // Arrange
+        let mut dev = BluetoothDevice::new("AA:BB:CC:DD:EE:FF", "Speaker", 0).unwrap();
+
+        // Act & Assert: Discovered -> Pairing
+        assert!(dev.set_state(DeviceState::Pairing).is_ok());
+        assert_eq!(dev.state(), &DeviceState::Pairing);
+
+        // Act & Assert: Pairing -> Paired
+        assert!(dev.set_state(DeviceState::Paired).is_ok());
+        assert_eq!(dev.state(), &DeviceState::Paired);
+
+        // Act & Assert: Paired -> Connected
+        assert!(dev.set_state(DeviceState::Connected).is_ok());
+        assert_eq!(dev.state(), &DeviceState::Connected);
+
+        // Act & Assert: Invalid transition (Connected -> Pairing directly)
+        assert!(dev.set_state(DeviceState::Pairing).is_err());
+    }
+
+    #[test]
+    fn test_bluetooth_manager_power_and_discovery() {
+        // Arrange
+        let mut mgr = BluetoothManager::new();
+        assert!(!mgr.is_discovering());
+
+        // Act & Assert: start discovery while unpowered must fail (Defensive Programming)
+        assert!(mgr.start_discovery().is_err());
+
+        // Act: power on & start discovery
+        mgr.power_on();
+        assert!(mgr.start_discovery().is_ok());
+        assert!(mgr.is_discovering());
+
+        // Act: power off must cascade and disable discovery
+        mgr.power_off();
+        assert!(!mgr.is_discovering());
+    }
+
+    #[test]
+    fn test_bluetooth_manager_add_and_query_devices() {
+        // Arrange
+        let mut mgr = BluetoothManager::new();
+        let dev = BluetoothDevice::new("11:22:33:44:55:66", "Keyboard", 0x002540).unwrap();
+
+        // Act
+        mgr.add_device(dev);
+
+        // Assert
+        let devices: Vec<_> = mgr.devices().collect();
+        assert_eq!(devices.len(), 1);
+        assert_eq!(devices[0].name(), "Keyboard");
+    }
+}

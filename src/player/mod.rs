@@ -107,3 +107,86 @@ impl MediaPlayer {
 impl Default for MediaPlayer {
     fn default() -> Self { Self::new() }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_media_player_creation_and_defaults() {
+        // Arrange & Act
+        let player = MediaPlayer::new();
+
+        // Assert
+        assert_eq!(player.state(), &PlaybackState::Idle);
+        assert_eq!(player.volume(), 70);
+        assert!(!player.is_muted());
+    }
+
+    #[test]
+    fn test_load_supported_and_unsupported_formats() {
+        // Arrange
+        let mut player = MediaPlayer::new();
+
+        // Act & Assert: Supported video
+        assert!(player.load(PathBuf::from("/media/video.mp4")).is_ok());
+        assert_eq!(player.state(), &PlaybackState::Ready);
+
+        // Act & Assert: Supported audio
+        assert!(player.load(PathBuf::from("/media/song.flac")).is_ok());
+
+        // Act & Assert: Unsupported format (fails fast)
+        assert!(player.load(PathBuf::from("/media/doc.pdf")).is_err());
+    }
+
+    #[test]
+    fn test_playback_lifecycle() {
+        // Arrange
+        let mut player = MediaPlayer::new();
+        player.load(PathBuf::from("/media/track.mp3")).unwrap();
+
+        // Act: Play
+        assert!(player.play().is_ok());
+        assert_eq!(player.state(), &PlaybackState::Playing);
+
+        // Act: Pause
+        assert!(player.pause().is_ok());
+        assert_eq!(player.state(), &PlaybackState::Paused);
+
+        // Act: Resume play
+        assert!(player.play().is_ok());
+        assert_eq!(player.state(), &PlaybackState::Playing);
+    }
+
+    #[test]
+    fn test_volume_clamping_and_muting() {
+        // Arrange
+        let mut player = MediaPlayer::new();
+
+        // Act & Assert: Clamping at 100
+        player.set_volume(150);
+        assert_eq!(player.volume(), 100);
+
+        player.set_volume(45);
+        assert_eq!(player.volume(), 45);
+
+        // Act & Assert: Mute toggling
+        player.toggle_mute();
+        assert!(player.is_muted());
+        player.toggle_mute();
+        assert!(!player.is_muted());
+    }
+
+    #[test]
+    fn test_playlist_management() {
+        // Arrange
+        let mut player = MediaPlayer::new();
+
+        // Act
+        player.add_to_playlist(PathBuf::from("track1.ogg"));
+        player.add_to_playlist(PathBuf::from("track2.opus"));
+
+        // Assert
+        assert_eq!(player.playlist.len(), 2);
+    }
+}
