@@ -1,21 +1,29 @@
-//! SigmaOS GTK+ Application Suite
-//!
-//! Provides GTK+-based desktop applications including:
-//! - `sigma-bluetooth`: Bluetooth manager (inspired by Linux Mint Blueman)
-//! - `sigma-player`: Media player (inspired by Linux Mint Celluloid/MPV)
-//!
-//! # Principles
-//! - MODULAR KERNEL DESIGN: Each app is a separate binary
-//! - SEPARATION OF CONCERNS: Bluetooth ≠ media player
-//! - PLUG-IN DRIVER MODEL: Apps register capabilities via traits
-//! - COMPOSITION OVER INHERITANCE: Use trait objects, not class hierarchies
-//! - GTK+ widget toolkit via safe bindings
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WidgetType { Window, Button, Label, BoxContainer }
 
-#![deny(unsafe_code)]
-#![warn(missing_docs)]
+pub struct GtkApplicationContext {
+    pub app_id: String,
+    pub is_running: bool,
+}
 
-pub mod bluetooth;
-pub mod player;
+impl GtkApplicationContext {
+    pub fn new(app_id: &str) -> Self {
+        Self { app_id: app_id.into(), is_running: true }
+    }
+    pub fn quit(&mut self) { self.is_running = false; }
+}
 
-/// SigmaOS GTK+ suite version
-pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_gtk_application_context_aaa() {
+        // Arrange
+        let mut app = GtkApplicationContext::new("org.sigmaos.MyApp");
+        assert!(app.is_running);
+        // Act
+        app.quit();
+        // Assert
+        assert!(!app.is_running);
+    }
+}
