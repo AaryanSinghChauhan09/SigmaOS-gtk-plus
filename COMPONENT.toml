@@ -1,6 +1,6 @@
 [component]
 name = "SigmaOS-GTK-plus"
 tier = 2
-description = "GTK3/GTK4 high-level desktop widget application toolkit bindings and event loop bridge"
+description = "SigmaOS GTK+ application suite - Bluetooth manager and media player"
 contracts = ['gtk-toolkit-bindings', 'event-loop-bridge', 'native-dialogs']
 upstream_inspirations = ['https://github.com/linuxmint/celluloid']
